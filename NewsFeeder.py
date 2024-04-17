@@ -10,11 +10,11 @@ class NewsFeeder:
     def get(self):
         x = requests.get(self.url)
         xmlstr = x.content.decode('utf-8')
-        news = json.loads(xmlstr)
-        return news
+        data = json.loads(xmlstr)
+        return data
     
-    def analyse_news(self, news):
-        content = "The News summary is: " + news["feed"][22]["summary"] + """
+    def analyse_news(self, news, index):
+        content = "The News summary is: " + news["feed"][index]["summary"] + """
             Firstly, answer "Yes, this news is related to ESG" if this news is related to ESG, either one aspect or indirect impplication is also ok, then analyze how this news is related to ESG in the three aspect (E, S, G).
             Answer in the form of:
             1. Environmental: 
@@ -26,7 +26,7 @@ class NewsFeeder:
         completion = self.client.chat.completions.create(model="local-model", messages=[{"role": "user", "content": content},],temperature=0.7)
         text = completion.choices[0].message.content
         if text[:1] == "No":
-            return False, dict(), text
+            return False, [None, None, None], text
         else:
             return True, self.seperate(text), text
     
@@ -40,4 +40,5 @@ class NewsFeeder:
 if __name__ == "__main__":
     company = 'CVX'
     feeder = NewsFeeder(company)
-    feeder.analyse_news()
+    data = feeder.get()
+    feeder.analyse_news(data, index=0)

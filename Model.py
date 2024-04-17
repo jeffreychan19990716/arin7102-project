@@ -3,6 +3,7 @@ from transformers import TFAutoModelForSequenceClassification
 from transformers import AutoTokenizer
 import numpy as np
 from scipy.special import softmax
+import pandas as pd
 
 
 class SentimentalModel():
@@ -31,16 +32,14 @@ class SentimentalModel():
         result = sorted(result.items(), key=lambda x:abs(x[1]), reverse=True)[0][1]
         return result
     
-    def calculate_overall_esg(self, stable_esg, varying_esg, var, n):
+    def calculate_overall_esg(self, stable_esg, varying_esg, var, n=50):
         alpha = n / (n + var)
         beta = var / (n + var)
-        new_esg = alpha * stable_esg + beta * varying_esg
+        new_esg = alpha * np.array(stable_esg) + beta * np.array(varying_esg)
         return new_esg
 
 
-
-
-news = ["The rise in oil prices could have a negative impact on climate change efforts due to increased emissions from the burning of fossil fuels. Furthermore, the ongoing war may also cause disruptions in energy supply chains and disrupt renewable energy projects, which could further exacerbate environmental issues.",
+summary = ["The rise in oil prices could have a negative impact on climate change efforts due to increased emissions from the burning of fossil fuels. Furthermore, the ongoing war may also cause disruptions in energy supply chains and disrupt renewable energy projects, which could further exacerbate environmental issues.",
         "The economic uncertainty arising from the rise in oil prices and potential global repercussions of the war could affect employment prospects, business sustainability, and overall living conditions of people worldwide. Additionally, concerns about the impact on economies may increase market volatility, which can have a ripple effect on individuals' savings, investments, and retirement plans.",
         "The fluctuation in oil prices and global economic impacts could challenge governments' ability to manage their economies effectively and implement policies that address climate change and sustainable development goals. These events may also highlight the need for more cooperation between nations to mitigate the consequences of such unforeseen circumstances on global markets, which are interconnected through trade, capital flows, and other mechanisms."
         ]
@@ -51,5 +50,10 @@ text2 = "1. Environmental: The news focuses on FuelCell Energy, a company that d
 
 if __name__ == "__main__":
     model = SentimentalModel()
-    esg = [model.predict(x) for x in news]
+    esg = [model.predict(x) for x in summary]
     print(esg)
+    esg_database = pd.load_csv("database.csv")
+    data = esg_database["CVX"]
+    stable_esg = [data["e"], data["s"], data["g"]] # yahoo fiance
+    var = data["var"] # https://www.macroaxis.com/invest/technicalIndicator/JNJ/Variance
+    new_esg = model.calculate_overall_esg(stable_esg, esg, var)

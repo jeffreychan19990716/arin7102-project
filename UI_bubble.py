@@ -1,11 +1,13 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
-from Model import *
 from NewsFeeder import *
+from Model import *
+import pandas as pd
 
 class ChatbotApp(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.model = SentimentalModel()
+        self.esg_database = pd.load_csv("database.csv")
         # 设置窗口标题和尺寸
         self.setWindowTitle("Chatbot")
         self.setGeometry(100, 100, 500, 400)
@@ -91,12 +93,19 @@ class ChatbotApp(QtWidgets.QWidget):
         self.chat_list.scrollToBottom()
 
     def message_handling(self, user_message):
-        feeder = NewsFeeder(ticker=user_message)
-        credit_model = CreditModel()
-        news = feeder.get()
-        success, summary, _ =  feeder.analyse_news(news)
+        ticker = user_message
+        feeder = NewsFeeder(ticker=ticker)
+        data = feeder.get()
+        success, summary, _ =  feeder.analyse_news(data, index=0)
+        esg = [self.model.predict(x) for x in summary]
+        
+        data = self.esg_database[ticker]
+        stable_esg = [data["e"], data["s"], data["g"]] # yahoo fiance
+        var = data["var"] # https://www.macroaxis.com/invest/technicalIndicator/JNJ/Variance
+        new_esg = self.model.calculate_overall_esg(stable_esg, esg, var)
 
-        return outputs
+        output = f"The ESG score for {ticker} is {new_esg}"
+        return output
 
         
 
