@@ -13,9 +13,14 @@ class NewsFeeder:
         data = json.loads(xmlstr)
         return data
     
+    def get_offline(self):
+        f = open('example_CVX.json') 
+        data = json.load(f)
+        return data
+    
     def analyse_news(self, news, index):
         content = "The News summary is: " + news["feed"][index]["summary"] + """
-            Firstly, answer "Yes, this news is related to ESG" if this news is related to ESG, either one aspect or indirect impplication is also ok, then analyze how this news is related to ESG in the three aspect (E, S, G).
+            Firstly, answer "Yes, this news is related to ESG" if this news is related to ESG, either one aspect or indirect implication is also ok, then analyze how this news is related to ESG in the three aspect (E, S, G).
             Answer in the form of:
             1. Environmental: 
             2. Social:
@@ -29,16 +34,24 @@ class NewsFeeder:
             return False, [None, None, None], text
         else:
             return True, self.seperate(text), text
+        
+    def analyse_news_offline(self, news=None, index=None):
+        text = "Yes, this news is related to ESG.\n1. Environmental: While there are no direct mentions of environmental impact in this news article, it should be noted that oil drilling activities can have significant environmental implications such as greenhouse gas emissions and potential oil spills. Companies operating in the oil industry must ensure they implement sustainable practices and adhere to environmental regulations to minimize any negative impacts on the environment.\n2. Social: The collaboration between two major companies, one being a U.S.-based multinational and the other a Venezuelan state-owned enterprise, might have potential social implications. This partnership could potentially bring job opportunities and economic growth in Venezuela, benefitting the local community. However, further information is required to assess whether these benefits are distributed equitably among all stakeholders, considering possible human rights concerns and labor conditions in Venezuela.\n3. Governance: The easing of U.S. sanctions on Venezuela's oil industry suggests a shift in geopolitical dynamics that could have implications for companies operating in the region. Increased transparency and accountability in business practices are crucial to ensure that both Chevron and PDVSA act responsibly, adhering to international standards and regulatory frameworks."
+        if text[:1] == "No":
+            return False, [None, None, None], text
+        else:
+            return True, self.seperate(text), text
+
     
     def seperate(self, text):
         pattern = r"\d+\.\s"
         segments = re.split(pattern, text)
         segments = [segment.strip() for segment in segments if segment.strip()]
-        return segments
+        return segments[-3:]
 
 
 if __name__ == "__main__":
     company = 'CVX'
     feeder = NewsFeeder(company)
-    data = feeder.get()
-    feeder.analyse_news(data, index=0)
+    success, summary, _ = feeder.analyse_news_offline()
+    print(summary)

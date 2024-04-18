@@ -3,11 +3,17 @@ from NewsFeeder import *
 from Model import *
 import pandas as pd
 
+def search_database(database, ticker):
+    data = database.loc[database['ticker'] == ticker]
+    stable_esg = [data["e"].values[0], data["s"].values[0], data["g"].values[0]] # yahoo fiance
+    var = data["var"].values[0] # https://www.macroaxis.com/invest/technicalIndicator/JNJ/Variance
+    return stable_esg, var
+
 class ChatbotApp(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.model = SentimentalModel()
-        self.esg_database = pd.load_csv("database.csv")
+        self.esg_database = pd.read_csv("database.csv")
         # 设置窗口标题和尺寸
         self.setWindowTitle("Chatbot")
         self.setGeometry(100, 100, 500, 400)
@@ -31,6 +37,11 @@ class ChatbotApp(QtWidgets.QWidget):
         input_layout.addWidget(self.send_button)
         self.send_button.clicked.connect(self.send_message)
 
+        # 创建清空按钮
+        self.reset_button = QtWidgets.QPushButton("Restart")
+        input_layout.addWidget(self.reset_button)
+        self.reset_button.clicked.connect(self.reset)
+
         # 创建退出按钮
         self.exit_button = QtWidgets.QPushButton("Exit")
         input_layout.addWidget(self.exit_button)
@@ -41,6 +52,9 @@ class ChatbotApp(QtWidgets.QWidget):
 
         # 设置主布局
         self.setLayout(layout)
+
+    def reset(self):
+        self.input_box.clear()
 
     def send_message(self):
         # 获取用户输入的消息
@@ -55,9 +69,8 @@ class ChatbotApp(QtWidgets.QWidget):
             self.input_box.clear()
 
             # 这里可以添加聊天机器人的逻辑，将响应显示在对话框中
-            # 示例响应
-            bot_response = f"{outputs}"
-            self.add_message("Chatbot", bot_response)
+            for output in outputs:
+                self.add_message("Chatbot", output)
 
     def add_message(self, sender, message):
         # 创建一个 QListWidgetItem 对象
@@ -95,22 +108,27 @@ class ChatbotApp(QtWidgets.QWidget):
     def message_handling(self, user_message):
         ticker = user_message
         feeder = NewsFeeder(ticker=ticker)
-        data = feeder.get()
-        success, summary, _ =  feeder.analyse_news(data, index=0)
+        #data = feeder.get()
+        #success, summary, _ =  feeder.analyse_news(data, index=0)
+        success, summary, _ =  feeder.analyse_news_offline()
+        if not success:
+            return ["Failed to analyse. Try again!"]
         esg = [self.model.predict(x) for x in summary]
         
-        data = self.esg_database[ticker]
-        stable_esg = [data["e"], data["s"], data["g"]] # yahoo fiance
-        var = data["var"] # https://www.macroaxis.com/invest/technicalIndicator/JNJ/Variance
+        stable_esg, var = search_database(self.esg_database, ticker)
         new_esg = self.model.calculate_overall_esg(stable_esg, esg, var)
 
-        output = f"The ESG score for {ticker} is {new_esg}"
-        return output
+        outputs = []
+        outputs.append(f"News summary:\n{summary}")
+        outputs.append(f"Old ESG is {stable_esg}")
+        outputs.append(f"New ESG is {esg}. The updated ESG score for {ticker} is {new_esg}")
+        return outputs
 
         
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     window = ChatbotApp()
     window.show()
