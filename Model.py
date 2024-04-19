@@ -13,6 +13,7 @@ class SentimentalModel():
         self.tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
         self.model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
         self.model.save_pretrained(MODEL_PATH)
+        self.tokenizer.save_pretrained(MODEL_PATH)
 
     def predict(self, text):
         encoded_input = self.tokenizer(text, return_tensors='pt')
