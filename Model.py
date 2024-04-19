@@ -52,8 +52,3 @@ if __name__ == "__main__":
     model = SentimentalModel()
     esg = [model.predict(x) for x in summary]
     print(esg)
-    esg_database = pd.load_csv("database.csv")
-    data = esg_database["CVX"]
-    stable_esg = [data["e"], data["s"], data["g"]] # yahoo fiance
-    var = data["var"] # https://www.macroaxis.com/invest/technicalIndicator/JNJ/Variance
-    new_esg = model.calculate_overall_esg(stable_esg, esg, var)
