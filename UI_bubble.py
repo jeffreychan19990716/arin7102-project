@@ -16,7 +16,7 @@ class ChatbotApp(QtWidgets.QWidget):
         self.esg_database = pd.read_csv("database.csv")
         # 设置窗口标题和尺寸
         self.setWindowTitle("Chatbot")
-        self.setGeometry(100, 100, 500, 400)
+        self.setGeometry(100, 100, 1000, 800)
 
         # 创建主布局
         layout = QtWidgets.QVBoxLayout()
@@ -54,7 +54,9 @@ class ChatbotApp(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def reset(self):
+        self.chat_list.clear()
         self.input_box.clear()
+        self.add_message("Chatbot", "Input company ticker")
 
     def send_message(self):
         # 获取用户输入的消息
@@ -105,6 +107,13 @@ class ChatbotApp(QtWidgets.QWidget):
         # 滚动到底部以显示最新消息
         self.chat_list.scrollToBottom()
 
+    def format_esg_text(self, content):
+        if type(content[0]) is str:
+            text = "Environmental:{e}\nSocial:{s}\nGovernance:{g}".format(e=content[0], s=content[1], g=content[2])
+        else:
+            text = "Environmental:{e:.2f}\nSocial:{s:.2f}\nGovernance:{g:.2f}".format(e=content[0], s=content[1], g=content[2])
+        return text
+
     def message_handling(self, user_message):
         ticker = user_message
         feeder = NewsFeeder(ticker=ticker)
@@ -119,9 +128,12 @@ class ChatbotApp(QtWidgets.QWidget):
         new_esg = self.model.calculate_overall_esg(stable_esg, esg, var)
 
         outputs = []
-        outputs.append(f"News summary:\n{summary}")
-        outputs.append(f"Old ESG is {stable_esg}")
-        outputs.append(f"New ESG is {esg}. The updated ESG score for {ticker} is {new_esg}")
+        outputs.append(f"News summary:\n")
+        for s in summary:
+            outputs.append(s)
+        outputs.append(f"News ESG:\n{self.format_esg_text(esg)}")
+        outputs.append(f"Original ESG:\n{self.format_esg_text(stable_esg)}")
+        outputs.append(f"Updated ESG:\n{self.format_esg_text(new_esg)}")
         return outputs
 
         
@@ -131,5 +143,6 @@ if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     window = ChatbotApp()
+    window.reset()
     window.show()
     sys.exit(app.exec_())
