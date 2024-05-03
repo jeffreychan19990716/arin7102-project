@@ -9,11 +9,12 @@ import pandas as pd
 class SentimentalModel():
     def __init__(self):
         self.labels = ['negative', 'neutral', 'positive']
-        MODEL_PATH = f"cardiffnlp/twitter-roberta-base-sentiment"
-        self.tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-        self.model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
-        self.model.save_pretrained(MODEL_PATH)
-        self.tokenizer.save_pretrained(MODEL_PATH)
+        tokenizer_path = "model"
+        model_path_finetuned = "model"
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_path_finetuned)
+        self.model.save_pretrained(model_path_finetuned)
+        self.tokenizer.save_pretrained(tokenizer_path)
 
     def predict(self, text):
         encoded_input = self.tokenizer(text, return_tensors='pt')
@@ -36,17 +37,14 @@ class SentimentalModel():
         else:
             return result[1]
     
-    def calculate_overall_esg(self, stable_esg, varying_esg, var, n=50):
-        #alpha = n / (n + var)
-        #beta = var / (n + var)
-        z = 0.95
-        #varying_esg > 0.7
+    def calculate_overall_esg(self, stable_esg, varying_esg, var=1, n=20):
+        z = n / (n + 20)
         new_esg = []
         for x, delta_x in zip(stable_esg, varying_esg):
             if delta_x == 0:
                 new_esg.append(x)
             else:
-                new_x = z * x + (1-z) * delta_x
+                new_x = z * x + (1 - z) * delta_x
                 new_esg.append(new_x)
         return new_esg
 
