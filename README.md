@@ -8,4 +8,5 @@
 
 # Using the Chatbot
 1. Input company ticker from SP 500. Due to the API limit for news provider, we recommend testing the ticker 'CVX'.
-2. Input any relevant ESG news url to see the associated ESG scores
+2. Input any relevant ESG news url to see the associated ESG scores.
+3. Depending on the computer, it may take a while for the local LLM model to make a response to the UI.
