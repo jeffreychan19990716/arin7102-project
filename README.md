@@ -13,4 +13,5 @@
 # Important notes
 - Input company ticker from SP 500. Due to the API limit for news provider, please test with the ticker 'CVX', where the data has been downloaded locally for offline testing. You can however still test the online model, but may need to try different company as most news are not ESG related. 
 - Input any relevant ESG news url to see the associated ESG scores.
-- Depending on the computer, it may take a while for the local LLM model to make a response to the UI.
+- Depending on the computer, it may take a while for the local LLM model to make a response to the UI, please dont close the UI window and wait for the output.
+- Each time after exiting the Chatbot, a log of the chat history will be saved with the file name as the timestamp of chat.
