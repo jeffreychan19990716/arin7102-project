@@ -48,9 +48,11 @@ class SentimentalModel():
         for x, delta_x in zip(stable_esg, varying_esg):
             if delta_x == 0:
                 new_esg.append(x)
-            else:
+            elif delta_x > 0:
                 new_x = z * x + (1 - z) * delta_x
                 new_esg.append(new_x)
+            else:
+                new_x = x - (1 - z) * delta_x
         return new_esg
 
 
