@@ -3,7 +3,10 @@
 2. Install all neccessary dependencies
    - PyQt
    - transformers
-3. run with ```python UI_bubble.py```
+3. Download the sentimental analysis model from:
+   https://connecthkuhk-my.sharepoint.com/:u:/g/personal/laicass_connect_hku_hk/EaoOzAo5hzFJgW2CNE3yfcABTotisC9xVXXd-X6Ci_yuMg?e=rS32WL
+   and put in the root directory
+4. run with ```python UI_bubble.py```
 
 
 # Using the Chatbot
